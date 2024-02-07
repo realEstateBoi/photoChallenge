@@ -20,15 +20,18 @@ internal class Program
         DateTime startTime = DateTime.Now;
         
         using var client = new HttpClient();
+        //timeout the client in 10 seconds since sometimes shutterstock et. al. get upset when I blast them with 100 requests
+        client.Timeout = new TimeSpan(0, 0, 0, 10);
         
         // if there is a missing_photos.txt it means we're in missing photos mode since the last run had missing photos
         // and we just want to download the missing photos so we don't have to use up more API calls
-        if (File.Exists(BuildPhotoFilePath("missing_photos.txt")))
-        {
-            Console.WriteLine($"Running in missing photos mode");
-            await DownloadMissingPhotosAsync(client);
-            return;
-        }
+        // TODO: Enable this after more testing
+        // if (File.Exists(BuildPhotoFilePath("missing_photos.txt")))
+        // {
+        //     Console.WriteLine($"Running in missing photos mode");
+        //     await DownloadMissingPhotosAsync(client);
+        //     return;
+        // }
 
         
         var allHouses = new List<House>();
@@ -49,7 +52,7 @@ internal class Program
             
         Console.WriteLine($"Total number of houses seen in process: {allHouses.Count}"); ;
         Console.WriteLine($"Total number of houses missing photoURL: {countOfHousesMissingPhotoUrl}");
-        Console.WriteLine($"Total number of photo download issue resulting in writing of missing_photos.txt: {photoUrlMap.Count}");
+        Console.WriteLine($"Total number of photo download issues resulting in writing of missing_photos.txt: {photoUrlMap.Count}");
         WriteMissingPhotosToFile(photoUrlMap);
         
         // Record the end time
