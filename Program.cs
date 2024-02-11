@@ -11,6 +11,9 @@ namespace DownloadHomePhotos;
 internal class Program
 {
     private const string ApiUrl = "http://app-homevision-staging.herokuapp.com/api_project/houses";
+    //TODO: The variables need to either be input values with defaults if this is a cmd line tool
+    //TODO: or dynamic if this is deployed to cloud and run as a scheduled job. There won't always be 10 pages with 10 items each
+    //TODO: Also need to play with the values to see what is sustainable. Maybe we could have 100 records per page and make 1 API request instead of 10
     private const int DefaultPerPage = 10;
     private const int NumPages = 10;
 
@@ -39,12 +42,15 @@ internal class Program
 
         for (int page = 1; page <= NumPages; page++)
         {
+            //TODO: All logs should be structured logs instead of flat text. We can do this using something like Serilog instead of just Console.
             Console.WriteLine($"Getting houses on page {page}");
             var houses = await GetHousesAsync(client, page);
             
             Console.WriteLine($"Number of houses on page {page}: {houses.Count}");
             allHouses.AddRange(houses);
 
+            // TODO: Think about how to separate the number of photos downloaded in the batch from the number of urls retrieved from the API
+            // TODO: i.e. we may retrieve 1000 houses in one API call, but we probably don't want to fire of 1000 photo download requests simultaneously
             await DownloadPhotosInBatchesAsync(client, houses, photoUrlMap);
         }
 
